@@ -47,7 +47,6 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 			while(ans.next()) {
 				accounts.add(mapToAccount(ans));
 			}		
-			System.out.println("all emp end");
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -56,7 +55,7 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 		return accounts;
 	}
 
-	public void save(Account account){
+	public long save(Account account){
 		Connection connect = null;
 		PreparedStatement statement = null;
 		PreparedStatement statement2 = null;
@@ -67,55 +66,41 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 			Address address = new Address();
 			Beneficiary beneficiary = new Beneficiary();
 			connect = DBUtil.getConnection();
-			String insertAccountQuery = "INSERT into account values(?,?,?,?,?,?,?)";
-			String insertBeneficiaryQuery = "INSERT into Beneficiaries values(?,?,?)";
+			String insertAccountQuery = "INSERT into account(name,isactive,city,country, balance, emailaddress) values(?,?,?,?,?,?)";
+			String insertBeneficiaryQuery = "INSERT into Beneficiaries(name, accountnumber) values(?,?)";
 			statement = connect.prepareStatement(insertAccountQuery);
 			statement2 = connect.prepareStatement(insertBeneficiaryQuery);
 
-			statement.setLong(1, account.getAccountNumber());
-			statement.setString(2, account.getName());
-			statement.setBoolean(3, account.isActive());
-			statement.setString(4, account.getAddress().getCity());
-			statement.setString(5, account.getAddress().getCountry());
-			statement.setInt(6, account.getBalance());
-			statement.setString(7, account.getEmailAddress());
+			//statement.setLong(1, account.getAccountNumber());
+			statement.setString(1, account.getName());
+			statement.setBoolean(2, account.isActive());
+			statement.setString(3, account.getAddress().getCity());
+			statement.setString(4, account.getAddress().getCountry());
+			statement.setInt(5, account.getBalance());
+			statement.setString(6, account.getEmailAddress());
 
-			int ans = statement.executeUpdate();
+			int resultSet = statement.executeUpdate();
 
 			for(Beneficiary e : account.getBeneficiaries()) {
-				statement2.setLong(1, e.getSsn());
-				statement2.setString(2, e.getName());
-				statement2.setLong(3, account.getAccountNumber());
-				statement2.execute();
+				//statement2.setLong(1, e.getSsn());
+				statement2.setString(1, e.getName());
+				statement2.setLong(2, account.getAccountNumber());
+				statement2.executeUpdate();
 			}
-
+//			System.out.println(resultSet.getLong("accountnumber"));
+				return resultSet;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Error occured while creating new account");
 		}
-
+		return 0;
 	}
 
-	public void update(Account account) {
-		// TODO Auto-generated method stub
+	public void update(Account account, Connection connection) {
+		PreparedStatement statement = null;
 		try {
-			Connection connect = null;
-			PreparedStatement statement = null;
-			PreparedStatement statement2 = null;
-
-			Account account1 = new Account();
-			Address address = new Address();
-			Beneficiary beneficiary = new Beneficiary();
-			connect = DBUtil.getConnection();
-			String updateAccountQuery = "UPDATE account set name=?,"
-					+ " isactive=?,"
-					+ " city=?,"
-					+ " country=?,"
-					+ " balance=?,"
-					+ " emailaddress=? where accountnumber=?";
-			String updateBeneficiaryQuery = "update Beneficiaries set name=? where accountnumber=?";
-			statement = connect.prepareStatement(updateAccountQuery);
-			statement2 = connect.prepareStatement(updateBeneficiaryQuery);
+			String updateAccountQuery = "UPDATE account set name=?, isactive=?, city=?, country=?, balance=?, emailaddress=? where accountnumber=?";
+			statement = connection.prepareStatement(updateAccountQuery);
 
 			statement.setString(1, account.getName());
 			statement.setBoolean(2, account.isActive());
@@ -124,69 +109,67 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 			statement.setInt(5, account.getBalance());
 			statement.setString(6, account.getEmailAddress());
 			statement.setLong(7, account.getAccountNumber());
-//
-			for(Beneficiary e : account.getBeneficiaries()) {
-				statement2.setString(1, e.getName());
-				statement2.setLong(2, account.getAccountNumber());
-				statement2.executeUpdate();
-			}
 
-			int ans = statement.executeUpdate();
-			if(ans!=0) {
-				System.out.println(account.getName()+" updated successfully");
-			}else {
-				System.out.println("Some problem occured while updating the account");
-			}
+			int ans = statement.executeUpdate();  // Execute the update
+
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
+
 	public void delete(Account account) {
-	    Connection connect = null;
-	    PreparedStatement statement = null;
-	    PreparedStatement statement2 = null;
+		Connection connect = null;
+		PreparedStatement statement = null;
+		PreparedStatement statement2 = null;
 
-	    try {
-	        connect = DBUtil.getConnection();
-	        
-	        // First, delete the beneficiaries for the account
-	        String deleteBeneficiaryQuery = "DELETE FROM beneficiaries WHERE accountnumber = ?";
-	        statement = connect.prepareStatement(deleteBeneficiaryQuery);
-	        statement.setLong(1, account.getAccountNumber());
-	        statement.executeUpdate();
-	        
-	        // Now delete the account
-	        String deleteAccountQuery = "DELETE FROM account WHERE accountnumber = ?";
-	        statement2 = connect.prepareStatement(deleteAccountQuery);
-	        statement2.setLong(1, account.getAccountNumber());
-	        int ans = statement2.executeUpdate();
-	        if(ans!=0) {
-	        	System.out.println(account.getName()+" deleted!");
-	        }else {
-	        	System.out.println("Some problem occured while deleting the account");
-	        }
+		try {
+			connect = DBUtil.getConnection();
 
-	    } catch (SQLException e) {
-	        // Handle the exception (you can log it or rethrow a custom exception)
-	        e.printStackTrace();
-	    } finally {
-	        // Close resources (like connection and statements) in the finally block
-	        try {
-	            if (statement != null) {
-	                statement.close();
-	            }
-	            if (statement2 != null) {
-	                statement2.close();
-	            }
-	            if (connect != null) {
-	                connect.close();
-	            }
-	        } catch (SQLException e) {
-	            e.printStackTrace();
-	        }
-	    }
+			// First, delete the beneficiaries for the account
+			String deleteBeneficiaryQuery = "DELETE FROM beneficiaries WHERE accountnumber = ?";
+			statement = connect.prepareStatement(deleteBeneficiaryQuery);
+			statement.setLong(1, account.getAccountNumber());
+			statement.executeUpdate();
+
+			// Now delete the account
+			String deleteAccountQuery = "DELETE FROM account WHERE accountnumber = ?";
+			statement2 = connect.prepareStatement(deleteAccountQuery);
+			statement2.setLong(1, account.getAccountNumber());
+			int ans = statement2.executeUpdate();
+			if(ans!=0) {
+				System.out.println(account.getName()+" deleted!");
+			}else {
+				System.out.println("Some problem occured while deleting the account");
+			}
+
+		} catch (SQLException e) {
+			// Handle the exception (you can log it or rethrow a custom exception)
+			e.printStackTrace();
+		} finally {
+			// Close resources (like connection and statements) in the finally block
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+				if (statement2 != null) {
+					statement2.close();
+				}
+				if (connect != null) {
+					connect.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private Account mapToAccount(ResultSet resultSet) throws SQLException {

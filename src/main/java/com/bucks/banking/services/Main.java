@@ -106,11 +106,9 @@ public class Main {
 
     private static void createNewAccount() {
     	
-    	Set<Beneficiary> beneficiaries = new HashSet<Beneficiary>();
+    	Set<Beneficiary> bene = new HashSet<Beneficiary>();
     	
         System.out.println("\nEnter account details: ");
-        System.out.print("Account Number: ");
-        long accountNumber = Long.parseLong(scanner.nextLine());
         System.out.print("Name: ");
         String name = scanner.nextLine();
         System.out.print("City: ");
@@ -121,10 +119,8 @@ public class Main {
         int balance = Integer.parseInt(scanner.nextLine());
         System.out.print("Email: ");
         String email = scanner.nextLine();
-
-        Account account = new Account(accountNumber, name, true, beneficiaries, new Address(city, country), balance, email);
-        bankService.createNewAccount(account);
-        System.out.println("Account created successfully.");
+        Account account = new Account(0, name, true, bene, new Address(city, country), balance, email);
+        long ans = bankService.createNewAccount(account);
     }
 
     private static void debitAmount() {
@@ -133,10 +129,9 @@ public class Main {
         System.out.print("Enter amount to debit: ");
         int amount = Integer.parseInt(scanner.nextLine());
 
-        Long transactionId = bankService.debit(amount, accountNumber);
-        if (transactionId != null) {
-            System.out.println("Debit successful. Transaction ID: " + transactionId);
-        } else {
+        Long transactionId = bankService.debit(amount, accountNumber, null);
+        if (transactionId == null) {
+            
             System.out.println("Debit failed. Insufficient balance or invalid account.");
         }
     }
@@ -147,10 +142,9 @@ public class Main {
         System.out.print("Enter amount to credit: ");
         int amount = Integer.parseInt(scanner.nextLine());
 
-        Long transactionId = bankService.credit(amount, accountNumber);
-        if (transactionId != null) {
-            System.out.println("Credit successful. Transaction ID: " + transactionId);
-        } else {
+        Long transactionId = bankService.credit(amount, accountNumber, null);
+        if (transactionId == null) {
+            
             System.out.println("Credit failed. Invalid account.");
         }
     }
@@ -164,9 +158,8 @@ public class Main {
         int amount = Integer.parseInt(scanner.nextLine());
 
         Long transactionId = bankService.transfer(fromAccount, toAccount, amount);
-        if (transactionId != null) {
-            System.out.println("Transfer successful. Transaction ID: " + transactionId);
-        } else {
+        if (transactionId == null) {
+            
             System.out.println("Transfer failed. Check accounts or balance.");
         }
     }
@@ -176,10 +169,16 @@ public class Main {
         long accountNumber = Long.parseLong(scanner.nextLine());
         System.out.print("Enter reward amount: ");
         int rewardAmount = Integer.parseInt(scanner.nextLine());
-
-        Reward reward = new Reward(0L, rewardAmount, accountNumber);
-        rewardRepo.addReward(reward);
-        System.out.println("Reward added successfully.");
+        JdbcAccountRepositoryImpl accountRepo = new JdbcAccountRepositoryImpl();
+        Account account = accountRepo.findAccountByNumber(accountNumber);
+        if(account!=null) {
+        	Reward reward = new Reward(0L, rewardAmount, accountNumber);
+        	rewardRepo.addReward(reward);
+        	System.out.println("Reward added successfully.");
+        }
+        else {
+        	System.out.println("Some problem occured while adding reward to the account");
+        }
     }
 
     private static void fetchAllAccounts() {
@@ -194,14 +193,12 @@ public class Main {
         System.out.print("\nEnter account number to deactivate: ");
         long accountNumber = Long.parseLong(scanner.nextLine());
         bankService.deactivateAccount(accountNumber);
-        System.out.println("Account deactivated successfully.");
-    }
+}
 
     private static void activateAccount() {
         System.out.print("\nEnter account number to activate: ");
         long accountNumber = Long.parseLong(scanner.nextLine());
         bankService.activateAccount(accountNumber);
-        System.out.println("Account activated successfully.");
     }
 
     private static void fetchTransactionsForAccount() {

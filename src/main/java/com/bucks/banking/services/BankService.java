@@ -1,17 +1,19 @@
 package com.bucks.banking.services;
 
 import com.bucks.banking.model.Account;
+
+import java.sql.Connection;
 import java.util.List;
 
 public interface BankService {
 
     Long transfer(Long fromAccount, Long toAccount, int amount);
 
-    Long debit(int amount, Long accountNumber);
+    Long debit(int amount, Long accountNumber, Connection connection);
 
-    Long credit(int amount, Long accountNumber);
+    Long credit(int amount, Long accountNumber, Connection connection);
 
-    void createNewAccount(Account account);
+    long createNewAccount(Account account);
 
     void deactivateAccount(Long accountNumber);
 

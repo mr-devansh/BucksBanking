@@ -11,8 +11,6 @@ public class JdbcRewardRepositoryImpl implements RewardRepository{
 	public void addReward(Reward reward) {
 		// TODO Auto-generated method stub
 		   // SQL Queries
-        String checkQuery = "SELECT rewardamount FROM reward WHERE accountnumber = ?";
-        String updateQuery = "UPDATE reward SET rewardamount = ? WHERE accountnumber = ?";
         String insertQuery = "INSERT INTO reward (accountnumber, rewardamount) VALUES (?, ?)";
         Connection connect = null;
 		PreparedStatement checkStmt = null;

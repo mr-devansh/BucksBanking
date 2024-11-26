@@ -80,15 +80,14 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 			statement.setString(6, account.getEmailAddress());
 
 			int resultSet = statement.executeUpdate();
-
 			for(Beneficiary e : account.getBeneficiaries()) {
 				//statement2.setLong(1, e.getSsn());
 				statement2.setString(1, e.getName());
 				statement2.setLong(2, account.getAccountNumber());
 				statement2.executeUpdate();
 			}
-//			System.out.println(resultSet.getLong("accountnumber"));
-				return resultSet;
+			//resultSet.getInt("accountNumber");
+			return resultSet;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Error occured while creating new account");

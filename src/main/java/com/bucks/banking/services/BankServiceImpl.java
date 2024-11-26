@@ -57,7 +57,7 @@ public class BankServiceImpl implements BankService {
             connection = DBUtil.getConnection();
             connection.setAutoCommit(false);  // Start a transaction
 
-            // Step 2: Debit the sender's account
+            // Step 2,: Debit the sender's account
             Long debitTransactionId = debit(amount, fromAccount, connection);
             if (debitTransactionId == null) {
                 connection.rollback();  // Rollback if debit fails

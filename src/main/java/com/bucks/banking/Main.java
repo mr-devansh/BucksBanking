@@ -1,4 +1,4 @@
-package com.bucks.banking.services;
+package com.bucks.banking;
 
 
 import com.bucks.banking.model.*;
@@ -9,7 +9,7 @@ import java.util.*;
 
 public class Main {
 
-    private static BankService bankService;
+    private static BankServiceImpl bankService;
     private static RewardRepository rewardRepo;
     private static JdbcTransactionRepositoryImpl transactionRepo;
     private static EmailService emailService;
@@ -36,17 +36,18 @@ public class Main {
     private static void displayMenu() {
         System.out.println("\n--- Banking System Menu ---");
         System.out.println("1. Create New Account");
-        System.out.println("2. Debit Amount");
-        System.out.println("3. Credit Amount");
-        System.out.println("4. Transfer Amount");
-        System.out.println("5. Add Reward");
-        System.out.println("6. Fetch All Accounts");
-        System.out.println("7. Deactivate Account");
-        System.out.println("8. Activate Account");
-        System.out.println("9. Fetch Transactions for Account");
-        System.out.println("10. Fetch Rewards for Account");
-        System.out.println("11. Send Email Notification");
-        System.out.println("12. Exit");
+        System.out.println("2. Add Beneficiaries");
+        System.out.println("3. Debit Amount");
+        System.out.println("4. Credit Amount");
+        System.out.println("5. Transfer Amount");
+        System.out.println("6. Add Reward");
+        System.out.println("7. Fetch All Accounts");
+        System.out.println("8. Deactivate Account");
+        System.out.println("9. Activate Account");
+        System.out.println("10. Fetch Transactions for Account");
+        System.out.println("11. Fetch Rewards for Account");
+        System.out.println("12. Send Email Notification");
+        System.out.println("13. Exit");
         System.out.print("Enter your choice: ");
     }
 
@@ -66,36 +67,39 @@ public class Main {
                 createNewAccount();
                 break;
             case 2:
+            	addBeneficiary();
+            	break;
+            case 3:
                 debitAmount();
                 break;
-            case 3:
+            case 4:
                 creditAmount();
                 break;
-            case 4:
+            case 5:
                 transferAmount();
                 break;
-            case 5:
+            case 6:
                 addReward();
                 break;
-            case 6:
+            case 7:
                 fetchAllAccounts();
                 break;
-            case 7:
+            case 8:
                 deactivateAccount();
                 break;
-            case 8:
+            case 9:
                 activateAccount();
                 break;
-            case 9:
+            case 10:
                 fetchTransactionsForAccount();
                 break;
-            case 10:
+            case 11:
                 fetchRewardsForAccount();
                 break;
-            case 11:
+            case 12:
                 sendEmailNotification();
                 break;
-            case 12:
+            case 13:
                 System.out.println("Exiting the application. Goodbye!");
                 System.exit(0);
                 break;
@@ -146,6 +150,19 @@ public class Main {
         if (transactionId == null) {
             
             System.out.println("Credit failed. Invalid account.");
+        }
+    }
+    
+    private static void addBeneficiary() {
+        System.out.print("\nEnter account number: ");
+        long account = scanner.nextLong();
+        scanner.nextLine();
+        System.out.print("Enter names separated by commas: ");
+        String names = scanner.nextLine();
+
+        int transactionId = bankService.updateBeneficiaries(names.split(","), account);
+        if (transactionId == -1) {
+            System.out.println("Update failes, Acount not found!");
         }
     }
 
@@ -204,13 +221,17 @@ public class Main {
     private static void fetchTransactionsForAccount() {
         System.out.print("\nEnter account number to fetch transactions: ");
         long accountNumber = Long.parseLong(scanner.nextLine());
-
         List<TransactionDetail> transactions = transactionRepo.getAllTransactionDetailsByAccountNumber(accountNumber);
+        if(!transactions.isEmpty()) {
         for (TransactionDetail transaction : transactions) {
             System.out.println(transaction);
         }
+        }
+        else {
+        	System.out.println("Acount does'nt exist or there are no transactions");
+        }
     }
-
+    
     private static void fetchRewardsForAccount() {
         System.out.print("\nEnter account number to fetch rewards: ");
         long accountNumber = Long.parseLong(scanner.nextLine());

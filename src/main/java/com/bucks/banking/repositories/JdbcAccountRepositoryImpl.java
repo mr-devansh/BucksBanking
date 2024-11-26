@@ -111,6 +111,16 @@ public class JdbcAccountRepositoryImpl implements AccountRepository{
 			statement.setLong(7, account.getAccountNumber());
 
 			int ans = statement.executeUpdate();  // Execute the update
+			
+			String insertBeneficiaryQuery = "INSERT into Beneficiaries(name, accountnumber) values(?,?)";
+			PreparedStatement statement2 = connection.prepareStatement(insertBeneficiaryQuery);
+
+			for(Beneficiary e : account.getBeneficiaries()) {
+				//statement2.setLong(1, e.getSsn());
+				statement2.setString(1, e.getName());
+				statement2.setLong(2, account.getAccountNumber());
+				statement2.executeUpdate();
+			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -60,7 +60,7 @@ public class JdbcTransactionRepositoryImpl implements TransactionRepository {
             checkStmt.setLong(1, accountNumber);
             resultSet = checkStmt.executeQuery();
 
-            // Process result set
+               // Process result set
             while (resultSet.next()) {
                 long transactionId = resultSet.getLong("transactionid");
                 Date transactionDate = resultSet.getTimestamp("transactiondate");

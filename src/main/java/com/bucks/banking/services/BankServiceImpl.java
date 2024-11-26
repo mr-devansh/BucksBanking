@@ -1,6 +1,7 @@
 package com.bucks.banking.services;
 
 import com.bucks.banking.model.Account;
+import com.bucks.banking.model.Beneficiary;
 import com.bucks.banking.model.TransactionDetail;
 import com.bucks.banking.model.TransactionType;
 import com.bucks.banking.repositories.AccountRepository;
@@ -23,7 +24,32 @@ public class BankServiceImpl implements BankService {
     	this.accountRepo = accountRepo;
         this.transactionRepo = transactionRepo;
 	}
-
+    
+    public int updateBeneficiaries(String[] names, long accountNumber) {
+    	Connection connection = null;
+    	try {
+    		connection = DBUtil.getConnection();
+    	} catch (SQLException e) {
+    		// TODO Auto-generated catch block
+   			e.printStackTrace();
+   		}
+        Account account = accountRepo.findAccountByNumber(accountNumber);
+        if (account != null) {
+        	Set<Beneficiary> setBene = new HashSet<Beneficiary>();
+            // Update the balance
+        	for (int i = 0; i < names.length; i++) {
+				setBene.add(new Beneficiary(0L, names[i]));
+			}
+            account.setBeneficiaries(setBene);
+            accountRepo.update(account, connection);  // Pass connection to use it in update method
+            emailService.sendMail(account.getEmailAddress(), "bank@bucks.com"
+            		, "Hi "+account.getName()+
+            		",your Beneficiaries are added Successfully");
+            return 1;  // Pass connection to use it in addTransaction
+        }
+    	return -1;
+    }
+    
     public Long transfer(Long fromAccount, Long toAccount, int amount) {
         Connection connection = null;
         try {
